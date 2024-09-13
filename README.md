@@ -1,8 +1,9 @@
 # Weather Handler
 ## About
 A simple microservice to gather a summary of the weather forecast for the week.
-This hooks into the accuweather.com API, an account will be required to generate an API key to make use of this app.
-Create account here: https://developer.accuweather.com/
+This hooks into the accuweather.com API, an account will be required to generate an API key to make use of this app.  
+Create account here: https://developer.accuweather.com/  
+A config.json file will need to be created in the format described below. This will need to be in the same directory as WeatherHandler or a path to config.json can be passed as an argument to the app.
 
 ## API endpoints
 /weather/dayforecast    -   Returns a 5 day forecast
