@@ -6,8 +6,10 @@ Create account here: https://developer.accuweather.com/
 A config.json file will need to be created in the format described below. This will need to be in the same directory as WeatherHandler or a path to config.json can be passed as an argument to the app.
 
 ## API endpoints
+```
 /weather/dayforecast    -   Returns a 5 day forecast
 /citylookup/<cityname>  -   Returns location keys as json array of all cities that match the search name including country and region
+```
 
 ## Json config format
 config.json  
