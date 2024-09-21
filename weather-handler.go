@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type DayData struct {
@@ -57,6 +58,7 @@ func main() {
 			servResponse, err := getDayForecast()
 			if err != nil {
 				warnLogger.Println(w, "Cannot retrieve forecast")
+				http.Error(w, "Cannot retrieve forecast", http.StatusInternalServerError)
 			}
 			w.Write(servResponse)
 			return
@@ -70,6 +72,7 @@ func main() {
 		servResponse, err := lookupCity(&city)
 		if err != nil {
 			warnLogger.Println(w, "Cannot retrieve city")
+			http.Error(w, "Cannot retrieve city codes", http.StatusInternalServerError)
 		}
 		w.Write(servResponse)
 	})
@@ -207,7 +210,7 @@ func lookupCity(city *string) ([]byte, error) {
 }
 
 func sendHttpRequest(request *http.Request) ([]byte, error) {
-	client := &http.Client{}
+	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Do(request)
 	if err != nil {
 		errorLogger.Println("Error sending server request:", err)
