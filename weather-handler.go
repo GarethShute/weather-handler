@@ -80,7 +80,7 @@ func main() {
 	fmt.Println("Running, waiting for request...")
 
 	if weatherConfig.Port != "" {
-		infoLogger.Println("Weather server listening on http://localhost:8083")
+		infoLogger.Println("Weather server listening on http://localhost:" + weatherConfig.Port)
 		http.ListenAndServe("0.0.0.0:"+weatherConfig.Port, nil)
 	} else {
 		infoLogger.Println("Weather server listening on http://localhost:8080")
