@@ -12,8 +12,6 @@ import (
 )
 
 var weatherConfig WeatherConfigData
-
-// var forecast Forecast
 var cities []CityInfo
 
 var infoLogger *log.Logger
