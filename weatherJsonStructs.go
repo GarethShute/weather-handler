@@ -45,3 +45,33 @@ type Region struct {
 type Country struct {
 	EnglishName string `json:"EnglishName"`
 }
+
+// Return structs for weather data
+type DayData struct {
+	MaximumTemp     float32 `json:"MaximumTemp"`
+	MinimumTemp     float32 `json:"MinimumTemp"`
+	Unit            string  `json:"Unit"`
+	IconRef         int     `json:"IconRef"`
+	IconUrl         string  `json:"IconUrl"`
+	IconPhrase      string  `json:"IconPhrase"`
+	RainProbability int     `json:"RainProbability"`
+}
+
+type ReturnDayWeatherData struct {
+	DailyForecasts []DayData `json:"DailyForecasts"`
+}
+
+// Structs for config data
+type WeatherConfigData struct {
+	Port     string `json:"port"`
+	Apikey   string `json:"apikey"`
+	Areacode string `json:"areacode"`
+}
+
+// Return struct for City search results
+type CitySearchResults struct {
+	LocationKey string `json:"LocationKey"`
+	Type        string `json:"Type"`
+	Country     string `json:"Country"`
+	Region      string `json:"Region"`
+}

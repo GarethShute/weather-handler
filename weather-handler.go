@@ -11,35 +11,9 @@ import (
 	"time"
 )
 
-type DayData struct {
-	MaximumTemp     float32 `json:"MaximumTemp"`
-	MinimumTemp     float32 `json:"MinimumTemp"`
-	Unit            string  `json:"Unit"`
-	IconRef         int     `json:"IconRef"`
-	IconUrl         string  `json:"IconUrl"`
-	IconPhrase      string  `json:"IconPhrase"`
-	RainProbability int     `json:"RainProbability"`
-}
-
-type ReturnDayWeatherData struct {
-	DailyForecasts []DayData `json:"DailyForecasts"`
-}
-
-type WeatherConfigData struct {
-	Port     string `json:"port"`
-	Apikey   string `json:"apikey"`
-	Areacode string `json:"areacode"`
-}
-
-type CitySearchResults struct {
-	LocationKey string `json:"LocationKey"`
-	Type        string `json:"Type"`
-	Country     string `json:"Country"`
-	Region      string `json:"Region"`
-}
-
 var weatherConfig WeatherConfigData
-var forecast Forecast
+
+// var forecast Forecast
 var cities []CityInfo
 
 var infoLogger *log.Logger
@@ -50,20 +24,19 @@ func main() {
 	configureLogging()
 	loadConfig()
 
-	http.HandleFunc("/weather/", func(w http.ResponseWriter, r *http.Request) {
-		action := strings.TrimPrefix(r.URL.Path, "/weather/")
+	http.HandleFunc("/weather/dayforecast", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		switch action {
-		case "dayforecast":
-			servResponse, err := getDayForecast()
-			if err != nil {
-				warnLogger.Println(w, "Cannot retrieve forecast")
-				http.Error(w, "Cannot retrieve forecast", http.StatusInternalServerError)
-			}
-			w.Write(servResponse)
-			return
+		servResponse, err := getDayForecast()
+		if err != nil {
+			warnLogger.Println("Cannot retrieve forecast:", err)
+			http.Error(w, "Cannot retrieve forecast", http.StatusInternalServerError)
 		}
-		fmt.Println("None Found")
+
+		n, err := w.Write(servResponse)
+		if err != nil {
+			warnLogger.Println("Cannot write forecast:", err, " Code: ", n)
+			http.Error(w, "Cannot write forecast output", http.StatusInternalServerError)
+		}
 	})
 
 	http.HandleFunc("/citylookup/", func(w http.ResponseWriter, r *http.Request) {
@@ -74,19 +47,28 @@ func main() {
 			warnLogger.Println(w, "Cannot retrieve city")
 			http.Error(w, "Cannot retrieve city codes", http.StatusInternalServerError)
 		}
-		w.Write(servResponse)
+		n, err := w.Write(servResponse)
+		if err != nil {
+			warnLogger.Println("Cannot write forecast:", err, " Code: ", n)
+			http.Error(w, "Cannot write forecast output", http.StatusInternalServerError)
+		}
 	})
 
 	fmt.Println("Running, waiting for request...")
 
 	if weatherConfig.Port != "" {
 		infoLogger.Println("Weather server listening on http://localhost:" + weatherConfig.Port)
-		http.ListenAndServe("0.0.0.0:"+weatherConfig.Port, nil)
+		err := http.ListenAndServe("0.0.0.0:"+weatherConfig.Port, nil)
+		if err != nil {
+			errorLogger.Fatal("Could not start server: ", err)
+		}
 	} else {
 		infoLogger.Println("Weather server listening on http://localhost:8080")
-		http.ListenAndServe("0.0.0.0:8080", nil)
+		err := http.ListenAndServe("0.0.0.0:8080", nil)
+		if err != nil {
+			errorLogger.Fatal("Could not start server: ", err)
+		}
 	}
-
 }
 
 func loadConfig() {
@@ -137,6 +119,7 @@ func getDayForecast() ([]byte, error) {
 		return nil, err
 	}
 
+	var forecast Forecast
 	err = json.Unmarshal([]byte(body), &forecast)
 	if err != nil {
 		return nil, err
@@ -151,7 +134,7 @@ func getDayForecast() ([]byte, error) {
 		returnDayData.MinimumTemp = day.Temperature.Minimum.Value
 		returnDayData.Unit = day.Temperature.Maximum.Unit
 		returnDayData.IconRef = day.Day.Icon
-		returnDayData.IconUrl = "https://developer.accuweather.com/sites/default/files/" + fmt.Sprintf("%02d", day.Day.Icon) + "-s.png"
+		returnDayData.IconUrl = fmt.Sprintf("https://developer.accuweather.com/sites/default/files/%02d-s.png", day.Day.Icon)
 		returnDayData.IconPhrase = day.Day.IconPhrase
 		returnDayData.RainProbability = day.Day.RainProbability
 		returnDayWeather.DailyForecasts = append(returnDayWeather.DailyForecasts, returnDayData)
